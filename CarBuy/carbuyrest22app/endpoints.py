@@ -18,6 +18,7 @@ def users(request):
         json_email = body_json['mail']
         json_password = body_json['password']
         json_birthdate = body_json['birthdate']
+        json_phone = body_json['phone']
     except KeyError:
         return JsonResponse({"error": "Missing parameter in body"}, status=400)
     
@@ -32,7 +33,7 @@ def users(request):
         return JsonResponse({"error": "Email already exists"}, status=400)
     
     salted_and_hashed_pass = bcrypt.hashpw(json_password.encode('utf8'), bcrypt.gensalt()).decode('utf8')
-    user_object = User(name=json_username, email=json_email, encrypted_password=salted_and_hashed_pass, birthdate=json_birthdate)
+    user_object = User(name=json_username, email=json_email, encrypted_password=salted_and_hashed_pass, birthdate=json_birthdate, phone=json_phone)
     user_object.save()
 
     return JsonResponse({"registered": True}, status=200)
@@ -123,3 +124,34 @@ def account(request):
         session = User.objects.get(token=header_token) 
         json_response = session.to_jsonAccount() 
         return JsonResponse(json_response, status=200)
+    
+@csrf_exempt
+def search_cars(request):
+    if request.method == 'GET':
+        # Obtener el nombre de la marca de coche de los parámetros de la solicitud
+        brand_name = request.GET.get('brand_name', None)
+        
+        # Verificar si se proporcionó un nombre de marca de coche
+        if not brand_name:
+            return JsonResponse({'error': 'Brand name missing'}, status=400)
+        
+        # Realizar la búsqueda en la base de datos por el nombre de la marca de coche
+        cars = Car.objects.filter(brand__icontains=brand_name)
+        
+        # Convertir los resultados a un formato JSON
+        results = []
+        for car in cars:
+            car_data = {
+                'brand': car.brand,
+                'model': car.model,
+                'year': car.year,
+                'price': str(car.price),
+                'description': car.description,
+                'user_id': car.user_id
+            }
+            results.append(car_data)
+        
+        # Retornar los resultados como una respuesta JSON
+        return JsonResponse({'cars': results}, status=200)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

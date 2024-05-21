@@ -23,5 +23,6 @@ urlpatterns = [
     path('users/', endpoints.users),
     path('sessions/', endpoints.sessions),
     path('password/', endpoints.password),
-    path('account/', endpoints.account)
+    path('account/', endpoints.account),
+    path('search/', endpoints.search_cars)
 ]
