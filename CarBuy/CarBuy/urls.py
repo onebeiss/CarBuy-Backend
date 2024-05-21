@@ -21,5 +21,6 @@ from carbuyrest22app import endpoints
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', endpoints.users),
-    path('sessions/', endpoints.sessions)
+    path('sessions/', endpoints.sessions),
+    path('password/', endpoints.password)
 ]
