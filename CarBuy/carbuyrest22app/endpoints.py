@@ -18,6 +18,7 @@ def users(request):
         json_email = body_json['mail']
         json_password = body_json['password']
         json_birthdate = body_json['birthdate']
+        json_phone = body_json['phone']
     except KeyError:
         return JsonResponse({"error": "Missing parameter in body"}, status=400)
     
@@ -32,7 +33,7 @@ def users(request):
         return JsonResponse({"error": "Email already exists"}, status=400)
     
     salted_and_hashed_pass = bcrypt.hashpw(json_password.encode('utf8'), bcrypt.gensalt()).decode('utf8')
-    user_object = User(name=json_username, email=json_email, encrypted_password=salted_and_hashed_pass, birthdate=json_birthdate)
+    user_object = User(name=json_username, email=json_email, encrypted_password=salted_and_hashed_pass, birthdate=json_birthdate, phone=json_phone)
     user_object.save()
 
     return JsonResponse({"registered": True}, status=200)
