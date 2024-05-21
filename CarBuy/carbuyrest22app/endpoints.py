@@ -70,3 +70,40 @@ def sessions(request):
         session.token = None
         session.save() #Se elimina
         return JsonResponse({"message": "Session closed successfully"}, status=200)
+    
+@csrf_exempt
+def password(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'HTTP method not supported'}, status=405)
+
+    # Obtener el cuerpo de la solicitud JSON
+    try:
+        body_json = json.loads(request.body)
+        current_password = body_json['current_password']
+        new_password = body_json['new_password']
+    except KeyError:
+        return JsonResponse({'error': 'Missing parameter in body'}, status=400)
+
+    try:
+        sessionToken = request.headers['sessionToken']  #Obtenemos el token de sesión mediante el headers
+    except AttributeError:
+        return JsonResponse({'error': 'Header token missing'})
+    
+    # Obtener el usuario con el token de sesión proporcionado
+    try:
+        user = User.objects.get(token=sessionToken)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Invalid sessionToken'}, status=401)
+
+    # Verificar la contraseña actual
+    if not bcrypt.checkpw(current_password.encode('utf8'), user.encrypted_password.encode('utf8')):
+        return JsonResponse({'error': 'Invalid credentials'}, status=401)
+
+    # Generar el hash para la nueva contraseña
+    hashed_new_password = bcrypt.hashpw(new_password.encode('utf8'), bcrypt.gensalt()).decode('utf8')
+
+    # Actualizar la contraseña del usuario
+    user.encrypted_password = hashed_new_password
+    user.save()
+
+    return JsonResponse({'message': 'Password changed succesfully'}, status=200)
