@@ -83,11 +83,13 @@ def password(request):
         new_password = body_json['new_password']
     except KeyError:
         return JsonResponse({'error': 'Missing parameter in body'}, status=400)
-
-    try:
-        sessionToken = request.headers['sessionToken']  #Obtenemos el token de sesión mediante el headers
-    except AttributeError:
-        return JsonResponse({'error': 'Header token missing'})
+    
+    # Obtener el token de sesión del encabezado
+    sessionToken = request.headers.get('sessionToken')
+    
+    # Verificar si el token de sesión está presente
+    if not sessionToken:
+        return JsonResponse({'error': 'Header token missing'}, status=401)  # curl -X POST -H "Content-Type: application/json" -d "{\"current_password\": \"Carmenchu10\", \"new_password\": \"CCarmenchu10\"}"  http://localhost:8000/password/
     
     # Obtener el usuario con el token de sesión proporcionado
     try:
@@ -106,4 +108,4 @@ def password(request):
     user.encrypted_password = hashed_new_password
     user.save()
 
-    return JsonResponse({'message': 'Password changed succesfully'}, status=200)
+    return JsonResponse({'message': 'Password changed succesfully'}, status=200)    # curl -X POST http://localhost:8000/password/ -H "Content-Type: application/json" -H "sessionToken: 51fde779db0a0b3e1bcd" -d '{"current_password": "1234", "new_password": "123456789"}'
