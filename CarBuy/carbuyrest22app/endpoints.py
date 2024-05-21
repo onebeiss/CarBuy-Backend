@@ -61,7 +61,7 @@ def sessions(request):
         db_user.save()  #Guardo la sesion
         return JsonResponse({"sessionToken": random_token}, status=200) # Devuelve una respuesta exitosa con el token generado
     
-    elif request.method == 'DELETE': #Ejemplo: curl -X DELETE -H "sessionToken: f0a55bd78563389cc536" http://localhost:8000/sessions/
+    elif request.method == 'DELETE': #Ejemplo: curl -X DELETE -H "sessionToken: 922aa6990578697f7afc" http://localhost:8000/sessions/
         try:
             header_token = request.headers.get("sessionToken", None) #Obtención del token de sesión del encabezado de la solicitud
         except AttributeError: #Si hay error...
@@ -109,3 +109,17 @@ def password(request):
     user.save()
 
     return JsonResponse({'message': 'Password changed succesfully'}, status=200)    # curl -X POST http://localhost:8000/password/ -H "Content-Type: application/json" -H "sessionToken: 51fde779db0a0b3e1bcd" -d '{"current_password": "1234", "new_password": "123456789"}'
+
+@csrf_exempt
+def account(request):
+    if request.method == 'GET': # curl -X GET http://localhost:8000/account -H "sessionToken: 922aa6990578697f7afc"
+        # Obtener el token de sesión de la cabecera
+        header_token = request.headers.get('sessionToken', None)
+
+        # Recuperamos token de la cabecera
+        if not header_token:
+            return JsonResponse({'error': 'Body token missing'}, status=401)
+        # Recupera la sesión del usuario correspondiente al token pasado en la bbdd
+        session = User.objects.get(token=header_token) 
+        json_response = session.to_jsonAccount() 
+        return JsonResponse(json_response, status=200)

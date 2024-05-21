@@ -9,7 +9,7 @@ class User(models.Model):
 
     def to_jsonAccount(self):
         return {
-            "correo": self.email
+            "email": self.email
         }
 
 class Coche(models.Model):
