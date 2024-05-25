@@ -3,7 +3,7 @@ import json
 import bcrypt
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from .models import User
+from .models import Car, User
 import secrets
 
 
