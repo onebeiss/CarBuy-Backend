@@ -24,5 +24,6 @@ urlpatterns = [
     path('sessions/', endpoints.sessions),
     path('password/', endpoints.password),
     path('account/', endpoints.account),
-    path('search/', endpoints.search_cars)
+    path('search/', endpoints.search_cars),
+    path('ad/<int:position_id>/', endpoints.ad_details)
 ]

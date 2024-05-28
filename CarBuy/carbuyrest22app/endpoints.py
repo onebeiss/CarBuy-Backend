@@ -155,3 +155,39 @@ def search_cars(request):
         return JsonResponse({'cars': results}, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import User, Car
+
+@csrf_exempt
+def ad_details(request, position_id):
+    if request.method == 'GET':  # Ejemplo: curl -X GET http://localhost:8000/ad/1/
+        try:
+            # Obtener el coche en la posición especificada
+            car = Car.objects.get(id=position_id)
+        except IndexError:
+            return JsonResponse({"error": "Ad not found"}, status=404)
+
+        # Obtener el usuario asociado a este coche
+        user = car.user
+        
+        # Crear la respuesta JSON
+        user_data = {
+            "name": user.name,
+            "phone": user.phone
+        }
+        
+        car_data = {
+            "brand": car.brand,
+            "model": car.model,
+            "year": car.year,
+            "price": car.price,
+            "description": car.description,
+            "user": user_data
+        }
+
+        return JsonResponse(car_data, status=200)
+    
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
