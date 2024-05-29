@@ -213,7 +213,10 @@ def ad_management(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
         
+<<<<<<< HEAD
         # Guarda el contenido del json request
+=======
+>>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         brand = data.get("brand")
         model = data.get("model")
         year = data.get("year")
@@ -221,17 +224,26 @@ def ad_management(request):
         description = data.get("description")
         user_id = data.get("user_id")
         
+<<<<<<< HEAD
         # Comprueba que todas las variables tengan contenido
         if not all([brand, model, year, price, description, user_id]):
             return JsonResponse({"error": "All fields are required"}, status=400)
 
         # Comprueba que el usuario exista
+=======
+        if not all([brand, model, year, price, description, user_id]):
+            return JsonResponse({"error": "All fields are required"}, status=400)
+
+>>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
         
+<<<<<<< HEAD
         # Agrega un nuevo objeto con los datos del anuncio creado
+=======
+>>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         car = Car.objects.create(
             brand=brand,
             model=model,
