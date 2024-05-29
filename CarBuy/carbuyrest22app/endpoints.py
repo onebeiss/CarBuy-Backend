@@ -191,3 +191,38 @@ def ad_details(request, position_id):
     
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+@csrf_exempt
+def ad_management(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        brand = data.get("brand")
+        model = data.get("model")
+        year = data.get("year")
+        price = data.get("price")
+        description = data.get("description")
+        user_id = data.get("user_id")
+        
+        if not all([brand, model, year, price, description, user_id]):
+            return JsonResponse({"error": "All fields are required"}, status=400)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
+        car = Car.objects.create(
+            brand=brand,
+            model=model,
+            year=year,
+            price=price,
+            description=description,
+            user=user
+        )
+        
+        return JsonResponse({"message": "Ad created successfully"}, status=201)
+    
