@@ -274,7 +274,31 @@ def ad_management(request):
         car.save()
         
         return JsonResponse({"message": "Ad updated successfully"}, status=200)
-
+    
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        # Obtiene el id del anuncio a eliminar
+        car_id = data.get("car_id")
+        
+        # Comprueba que el id del anuncio tenga contenido
+        if not car_id:
+            return JsonResponse({"error": "car_id is required"}, status=400)
+        
+        # Comprueba que el anuncio exista
+        try:
+            car = Car.objects.get(id=car_id)
+        except Car.DoesNotExist:
+            return JsonResponse({"error": "Ad not found"}, status=404)
+        
+        # Elimina el anuncio
+        car.delete()
+        
+        return JsonResponse({"message": "Ad deleted successfully"}, status=200)
+    
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
     
