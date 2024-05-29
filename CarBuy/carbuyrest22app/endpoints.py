@@ -213,10 +213,7 @@ def ad_management(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
         
-<<<<<<< HEAD
         # Guarda el contenido del json request
-=======
->>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         brand = data.get("brand")
         model = data.get("model")
         year = data.get("year")
@@ -224,26 +221,17 @@ def ad_management(request):
         description = data.get("description")
         user_id = data.get("user_id")
         
-<<<<<<< HEAD
         # Comprueba que todas las variables tengan contenido
         if not all([brand, model, year, price, description, user_id]):
             return JsonResponse({"error": "All fields are required"}, status=400)
 
         # Comprueba que el usuario exista
-=======
-        if not all([brand, model, year, price, description, user_id]):
-            return JsonResponse({"error": "All fields are required"}, status=400)
-
->>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
         
-<<<<<<< HEAD
         # Agrega un nuevo objeto con los datos del anuncio creado
-=======
->>>>>>> 446ff6a52392f3ee0a1b111e1ecdab4c9b9f05c4
         car = Car.objects.create(
             brand=brand,
             model=model,
@@ -254,4 +242,39 @@ def ad_management(request):
         )
         
         return JsonResponse({"message": "Ad created successfully"}, status=201)
+    
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        # Obtén el id del anuncio a actualizar
+        car_id = data.get("car_id")
+        
+        # Comprueba que el id del anuncio tenga contenido
+        if not car_id:
+            return JsonResponse({"error": "car_id is required"}, status=400)
+        
+        # Comprueba que el anuncio exista
+        try:
+            car = Car.objects.get(id=car_id)
+        except Car.DoesNotExist:
+            return JsonResponse({"error": "Ad not found"}, status=404)
+        
+        # Actualiza los campos del anuncio con los datos proporcionados, si están presentes
+        car.brand = data.get("brand", car.brand)
+        car.model = data.get("model", car.model)
+        car.year = data.get("year", car.year)
+        car.price = data.get("price", car.price)
+        car.description = data.get("description", car.description)
+        car.user_id = data.get("user_id", car.user_id)
+        
+        # Guarda los cambios en la base de datos
+        car.save()
+        
+        return JsonResponse({"message": "Ad updated successfully"}, status=200)
+
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
     
