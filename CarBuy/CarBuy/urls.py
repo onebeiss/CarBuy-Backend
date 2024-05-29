@@ -9,5 +9,6 @@ urlpatterns = [
     path('password/', endpoints.password),
     path('account/', endpoints.account),
     path('search/', endpoints.search_cars),
-    path('ad/<int:position_id>/', endpoints.ad_details)
+    path('ad/<int:position_id>/', endpoints.ad_details),
+    path('ad_management/', endpoints.ad_management)
 ]
