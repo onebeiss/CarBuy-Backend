@@ -1,4 +1,3 @@
-
 import json
 import bcrypt
 from django.views.decorators.csrf import csrf_exempt
@@ -9,33 +8,51 @@ import secrets
 
 @csrf_exempt
 def users(request):
+    # Verifica que el método HTTP sea POST
     if request.method != 'POST':
         return JsonResponse({"error": "HTTP method not supported"}, status=405)
     
     try:
+        # Intenta cargar el cuerpo de la solicitud como JSON
         body_json = json.loads(request.body)
+        # Extrae los parámetros del JSON
         json_username = body_json['name']
         json_email = body_json['mail']
         json_password = body_json['password']
         json_birthdate = body_json['birthdate']
         json_phone = body_json['phone']
     except KeyError:
+        # Si falta algún parámetro, devuelve un error
         return JsonResponse({"error": "Missing parameter in body"}, status=400)
     
+    # Verifica que el correo electrónico sea válido
     if '@' not in json_email or len(json_email) < 5:
         return JsonResponse({"error": "Invalid email"}, status=400)
     
     try:
+        # Verifica si ya existe un usuario con ese correo electrónico
         repeat_user = User.objects.get(email=json_email)
     except User.DoesNotExist:
+        # Si no existe, continúa con el registro
         pass
     else:
+        # Si el correo ya existe, devuelve un error
         return JsonResponse({"error": "Email already exists"}, status=400)
     
+    # Hashea y saltea la contraseña
     salted_and_hashed_pass = bcrypt.hashpw(json_password.encode('utf8'), bcrypt.gensalt()).decode('utf8')
-    user_object = User(name=json_username, email=json_email, encrypted_password=salted_and_hashed_pass, birthdate=json_birthdate, phone=json_phone)
+    # Crea un nuevo objeto de usuario con los datos proporcionados
+    user_object = User(
+        name=json_username,
+        email=json_email,
+        encrypted_password=salted_and_hashed_pass,
+        birthdate=json_birthdate,
+        phone=json_phone
+    )
+    # Guarda el nuevo usuario en la base de datos
     user_object.save()
 
+    # Devuelve una respuesta indicando que el registro fue exitoso
     return JsonResponse({"registered": True}, status=200)
     
 @csrf_exempt    
@@ -155,14 +172,10 @@ def search_cars(request):
         return JsonResponse({'cars': results}, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import User, Car
 
 @csrf_exempt
 def ad_details(request, position_id):
-    if request.method == 'GET':  # Ejemplo: curl -X GET http://localhost:8000/ad/1/
+    if request.method == 'GET':
         try:
             # Obtener el coche en la posición especificada
             car = Car.objects.get(id=position_id)
@@ -191,3 +204,42 @@ def ad_details(request, position_id):
     
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+@csrf_exempt
+def ad_management(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        # Guarda el contenido del json request
+        brand = data.get("brand")
+        model = data.get("model")
+        year = data.get("year")
+        price = data.get("price")
+        description = data.get("description")
+        user_id = data.get("user_id")
+        
+        # Comprueba que todas las variables tengan contenido
+        if not all([brand, model, year, price, description, user_id]):
+            return JsonResponse({"error": "All fields are required"}, status=400)
+
+        # Comprueba que el usuario exista
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
+        # Agrega un nuevo objeto con los datos del anuncio creado
+        car = Car.objects.create(
+            brand=brand,
+            model=model,
+            year=year,
+            price=price,
+            description=description,
+            user=user
+        )
+        
+        return JsonResponse({"message": "Ad created successfully"}, status=201)
+    
