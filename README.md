@@ -7,18 +7,15 @@ Este es el backend del proyecto **CarBuy**, una aplicación web para la compra y
 ## Tecnologías Utilizadas
 
 - **Python 3**
-- **Django 3**
-- **Django REST framework**
-- **SQLite** (puedes cambiar a otra base de datos si lo necesitas)
+- **Django 5**
+- **SQLite 3**
 - **bcrypt** (para hashing de contraseñas)
 
 ## Estructura del Proyecto
 
 - `carbuyrest22app/`: Contiene la aplicación principal de Django.
   - `models.py`: Define los modelos de la base de datos.
-  - `views.py`: Contiene la lógica de los endpoints de la API.
   - `urls.py`: Define las rutas de la API.
-  - `serializers.py`: Define los serializadores para los modelos.
   - `endpoints.py`: Contiene los endpoints para las operaciones de la API.
 
 ## Instalación y Configuración
