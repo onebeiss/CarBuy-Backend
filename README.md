@@ -2,6 +2,8 @@
 
 Este es el backend del proyecto **CarBuy**, una aplicación web para la compra y venta de automóviles. Este backend está construido con Django y proporciona una API RESTful para gestionar usuarios, coches y sus relaciones.
 
+**🚧 ¡README EN OBRAS CUIDADO! 🚧**
+
 ## Tecnologías Utilizadas
 
 - **Python 3**
