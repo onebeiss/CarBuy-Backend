@@ -8,7 +8,7 @@ import secrets
 
 @csrf_exempt
 def users(request):
-    # Verifica que el método HTTP sea POST
+    # curl -X POST -H "Content-Type: application/json" -d '{"name":"John Doe", "mail":"johndoe@example.com", "password":"password123", "birthdate":"2000-01-01", "phone":"123456789"}' http://localhost:8000/users/
     if request.method != 'POST':
         return JsonResponse({"error": "HTTP method not supported"}, status=405)
     
@@ -399,6 +399,7 @@ def get_favourites(request):
         return JsonResponse({"error": "Invalid request method"}, status=405)
     
 def get_ads(request):
+    # http://localhost:8000/get_ads/
     if request.method == 'GET':
         # Obtiene todos los anuncios de coches
         all_cars = Car.objects.all()
@@ -421,5 +422,28 @@ def get_ads(request):
 
         # Retorna la lista de datos en formato JSON
         return JsonResponse(cars_data, safe=False)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+@csrf_exempt
+def get_user(request, user_id):
+    # http://localhost:8000/get_user/1/
+    if request.method == 'GET':
+        # Comprueba que el id pertenece a un usuario existente
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        # Carga todos los datos en un diccionario
+        user_info = {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "birthdate": user.birthdate,
+            "phone": user.phone,
+            "token": user.token
+        }
+        return JsonResponse(user_info, status=200)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
