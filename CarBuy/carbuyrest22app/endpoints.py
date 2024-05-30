@@ -304,6 +304,7 @@ def ad_management(request):
     
 @csrf_exempt
 def favourite_management(request):
+    # curl -X PUT -H "Content-Type: application/json" -d '{"user_id": 1, "car_id": 2}' http://localhost:8000/favourite_management/
     if request.method == 'PUT':
         try:
             data = json.loads(request.body)
@@ -332,6 +333,7 @@ def favourite_management(request):
         
         return JsonResponse({"message": "Car added to favourites"}, status=201)
     
+    # curl -X DELETE -H "Content-Type: application/json" -d '{"user_id": 1, "car_id": 2}' http://localhost:8000/favourite_management/
     elif request.method == 'DELETE':
         try:
             data = json.loads(request.body)
@@ -363,5 +365,34 @@ def favourite_management(request):
         
         except FavouriteCar.DoesNotExist:
             return JsonResponse({"error": "Favourite not found"}, status=404)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+@csrf_exempt
+def get_favourites(request):
+    # curl -X GET http://localhost:8000/get_favourites/
+    if request.method == 'GET':
+        # Obtiene todos los favoritos
+        favourites = FavouriteCar.objects.all()
+
+        # Lista para almacenar los datos de favoritos
+        favourites_data = []
+
+        # Itera sobre los favoritos y agrega los datos a la lista
+        for favourite in favourites:
+            favourite_info = {
+                "user_id": favourite.user.id,
+                "car_id": favourite.car.id,
+                "user_name": favourite.user.name,
+                "car_brand": favourite.car.brand,
+                "car_model": favourite.car.model,
+                "car_year": favourite.car.year,
+                "car_price": favourite.car.price,
+                "car_description": favourite.car.description
+            }
+            favourites_data.append(favourite_info)
+
+        # Retorna la lista de datos de favoritos en formato JSON
+        return JsonResponse(favourites_data, status=200, safe=False)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
