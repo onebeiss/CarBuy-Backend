@@ -2,7 +2,7 @@ import json
 import bcrypt
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from .models import Car, User
+from .models import Car, FavouriteCar, User
 import secrets
 
 
@@ -302,3 +302,35 @@ def ad_management(request):
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
     
+@csrf_exempt
+def favourite_management(request):
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        # Obtiene el id de usuario y coche
+        user_id = data.get('user_id')
+        car_id = data.get('car_id')
+        
+        # Saca un error si alguno de los id no vienen
+        if not user_id or not car_id:
+            return JsonResponse({"error": "Both user_id and car_id are required"}, status=400)
+        
+        # Saca un error si el coche o usuario no existen en la bbdd
+        try:
+            user = User.objects.get(id=user_id)
+            car = Car.objects.get(id=car_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        except Car.DoesNotExist:
+            return JsonResponse({"error": "Car not found"}, status=404)
+        
+        # Registra el coche como favorito
+        FavouriteCar.objects.create(user=user, car=car)
+        
+        return JsonResponse({"message": "Car added to favourites"}, status=201)
+
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
