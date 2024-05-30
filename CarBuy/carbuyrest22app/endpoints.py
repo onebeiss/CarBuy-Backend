@@ -164,6 +164,7 @@ def search_cars(request):
                 'year': car.year,
                 'price': str(car.price),
                 'description': car.description,
+                'image_url': car.image_url,
                 'user_id': car.user_id
             }
             results.append(car_data)
@@ -197,6 +198,7 @@ def ad_details(request, position_id):
             "year": car.year,
             "price": car.price,
             "description": car.description,
+            "image_url": car.image_url,
             "user": user_data
         }
 
@@ -220,10 +222,11 @@ def ad_management(request):
         year = data.get("year")
         price = data.get("price")
         description = data.get("description")
+        image_url = data.get("image_url")
         user_id = data.get("user_id")
         
         # Comprueba que todas las variables tengan contenido
-        if not all([brand, model, year, price, description, user_id]):
+        if not all([brand, model, year, price, description, image_url, user_id]):
             return JsonResponse({"error": "All fields are required"}, status=400)
 
         # Comprueba que el usuario exista
@@ -239,6 +242,7 @@ def ad_management(request):
             year=year,
             price=price,
             description=description,
+            image_url=image_url,
             user=user
         )
         
@@ -269,6 +273,7 @@ def ad_management(request):
         car.year = data.get("year", car.year)
         car.price = data.get("price", car.price)
         car.description = data.get("description", car.description)
+        car.image_url = data.get("image_url", car.image_url)
         car.user_id = data.get("user_id", car.user_id)
         
         # Guarda los cambios en la base de datos
@@ -389,7 +394,8 @@ def get_favourites(request):
                 "car_model": favourite.car.model,
                 "car_year": favourite.car.year,
                 "car_price": favourite.car.price,
-                "car_description": favourite.car.description
+                "car_description": favourite.car.description,
+                "image_url": favourite.car.image_url
             }
             favourites_data.append(favourite_info)
 
@@ -416,6 +422,7 @@ def get_ads(request):
                 "year": car.year,
                 "price": str(car.price),  # Convertir Decimal a String
                 "description": car.description,
+                "image_url": car.image_url,
                 "user_id": car.user_id
             }
             cars_data.append(car_info)
