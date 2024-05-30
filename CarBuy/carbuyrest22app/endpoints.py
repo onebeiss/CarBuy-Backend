@@ -207,6 +207,7 @@ def ad_details(request, position_id):
     
 @csrf_exempt
 def ad_management(request):
+    # curl -X POST -H "Content-Type: application/json" -d '{"brand": "Volkswagen", "model": "Golf GTI", "year": 2006, "price": 9000, "description": "A good car to drive", "user_id": 1}' http://localhost:8000/ad_management/
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -304,7 +305,7 @@ def ad_management(request):
     
 @csrf_exempt
 def favourite_management(request):
-    # curl -X PUT -H "Content-Type: application/json" -d '{"user_id": 1, "car_id": 2}' http://localhost:8000/favourite_management/
+    # curl -X PUT -H "Content-Type: application/json" -d '{"user_id": 2, "car_id": 5}' http://localhost:8000/favourite_management/
     if request.method == 'PUT':
         try:
             data = json.loads(request.body)
@@ -394,5 +395,31 @@ def get_favourites(request):
 
         # Retorna la lista de datos de favoritos en formato JSON
         return JsonResponse(favourites_data, status=200, safe=False)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+def get_ads(request):
+    if request.method == 'GET':
+        # Obtiene todos los anuncios de coches
+        all_cars = Car.objects.all()
+
+        # Lista para almacenar los datos
+        cars_data = []
+
+        # Itera sobre los coches y agrega los datos a la lista
+        for car in all_cars:
+            car_info = {
+                "id": car.id,
+                "brand": car.brand,
+                "model": car.model,
+                "year": car.year,
+                "price": str(car.price),  # Convertir Decimal a String
+                "description": car.description,
+                "user_id": car.user_id
+            }
+            cars_data.append(car_info)
+
+        # Retorna la lista de datos en formato JSON
+        return JsonResponse(cars_data, safe=False)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
