@@ -13,5 +13,6 @@ urlpatterns = [
     path('ad_management/', endpoints.ad_management),
     path('favourite_management/', endpoints.favourite_management),
     path('get_favourites/', endpoints.get_favourites),
-    path('get_ads/', endpoints.get_ads)
+    path('get_ads/', endpoints.get_ads),
+    path('get_user/<int:user_id>/', endpoints.get_user)
 ]
