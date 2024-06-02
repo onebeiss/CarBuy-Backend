@@ -19,7 +19,7 @@ class Car(models.Model):
     year = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    image_url = models.URLField()
+    image_url = models.URLField(default='https://shorturl.at/YJLnZ')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class FavouriteCar(models.Model):
