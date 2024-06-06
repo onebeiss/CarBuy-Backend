@@ -378,8 +378,16 @@ def favourite_management(request):
 def get_favourites(request):
     # curl -X GET http://localhost:8000/get_favourites/
     if request.method == 'GET':
-        # Obtiene todos los favoritos
-        favourites = FavouriteCar.objects.all()
+
+        sessionToken = request.headers['sessionToken']
+
+        try:
+            user = User.objects.get(token=sessionToken)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Invalid sessionToken'}, status=401)
+        
+        # Obtiene los favoritos
+        favourites = FavouriteCar.objects.filter(user=user)
 
         # Lista para almacenar los datos de favoritos
         favourites_data = []
@@ -433,12 +441,14 @@ def get_ads(request):
         return JsonResponse({"error": "Invalid request method"}, status=405)
     
 @csrf_exempt
-def get_user(request, user_id):
-    # http://localhost:8000/get_user/1/
+def get_user(request):
+    # http://localhost:8000/get_user/
     if request.method == 'GET':
+
+        sessionToken = request.headers['sessionToken']
         # Comprueba que el id pertenece a un usuario existente
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(token=sessionToken)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
 
@@ -447,8 +457,6 @@ def get_user(request, user_id):
             "id": user.id,
             "email": user.email,
             "name": user.name,
-            "birthdate": user.birthdate,
-            "phone": user.phone,
             "token": user.token
         }
         return JsonResponse(user_info, status=200)
