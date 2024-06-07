@@ -146,19 +146,20 @@ def account(request):
 def search_cars(request):
     if request.method == 'GET':
         # Obtener el nombre de la marca de coche de los parámetros de la solicitud
-        brand_name = request.GET.get('brand_name', None)
+        search_query = request.GET.get('q', None)
         
         # Verificar si se proporcionó un nombre de marca de coche
-        if not brand_name:
-            return JsonResponse({'error': 'Brand name missing'}, status=400)
+        if not search_query:
+            return JsonResponse({'error': 'Search query missing'}, status=400)
         
         # Realizar la búsqueda en la base de datos por el nombre de la marca de coche
-        cars = Car.objects.filter(brand__icontains=brand_name)
+        cars = Car.objects.filter(brand__icontains=search_query) | Car.objects.filter(model__icontains=search_query)
         
         # Convertir los resultados a un formato JSON
         results = []
         for car in cars:
             car_data = {
+                "car_id": car.id,
                 'brand': car.brand,
                 'model': car.model,
                 'year': car.year,
