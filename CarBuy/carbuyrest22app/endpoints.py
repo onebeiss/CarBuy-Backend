@@ -311,68 +311,48 @@ def ad_management(request):
 @csrf_exempt
 def favourite_management(request):
     # curl -X PUT -H "Content-Type: application/json" -d '{"user_id": 2, "car_id": 5}' http://localhost:8000/favourite_management/
-    if request.method == 'PUT':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        
-        # Obtiene el id de usuario y coche
-        user_id = data.get('user_id')
-        car_id = data.get('car_id')
-        
-        # Saca un error si alguno de los id no vienen
-        if not user_id or not car_id:
-            return JsonResponse({"error": "Both user_id and car_id are required"}, status=400)
-        
-        # Saca un error si el coche o usuario no existen en la bbdd
-        try:
-            user = User.objects.get(id=user_id)
-            car = Car.objects.get(id=car_id)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
-        except Car.DoesNotExist:
-            return JsonResponse({"error": "Car not found"}, status=404)
-        
-        # Registra el coche como favorito
-        FavouriteCar.objects.create(user=user, car=car)
-        
-        return JsonResponse({"message": "Car added to favourites"}, status=201)
+    if request.method != 'PUT':
+        return JsonResponse({'error': 'HTTP method not supported'}, status=405)
+
+    sessionToken = request.headers['sessionToken']
+    if not sessionToken:
+        return JsonResponse({'error': 'Missing sessionToken'}, status=400)
     
-    # curl -X DELETE -H "Content-Type: application/json" -d '{"user_id": 1, "car_id": 2}' http://localhost:8000/favourite_management/
-    elif request.method == 'DELETE':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        
-        # Obtiene el id de usuario y coche
-        user_id = data.get('user_id')
-        car_id = data.get('car_id')
-        
-        # Saca un error si alguno de los id no vienen
-        if not user_id or not car_id:
-            return JsonResponse({"error": "Both user_id and car_id are required"}, status=400)
-        
-        # Saca un error si el coche o usuario no existen en la bbdd
-        try:
-            user = User.objects.get(id=user_id)
-            car = Car.objects.get(id=car_id)
-        except User.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
-        except Car.DoesNotExist:
-            return JsonResponse({"error": "Car not found"}, status=404)
-        
-        # Elimina el coche de favoritos
-        try:
-            favourite = FavouriteCar.objects.get(user=user, car=car)
-            favourite.delete()
-            return JsonResponse({"message": "Car removed from favourites"}, status=200)
-        
-        except FavouriteCar.DoesNotExist:
-            return JsonResponse({"error": "Favourite not found"}, status=404)
-    else:
-        return JsonResponse({"error": "Invalid request method"}, status=405)
+    try:
+        user = User.objects.get(token=sessionToken)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Invalid sessionToken'}, status=401)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    car_id = data.get('car_id')
+    if not car_id:
+        return JsonResponse({"error": "car_id is required"}, status=400)
+
+    try:
+        car_id = int(car_id)
+    except ValueError:
+        return JsonResponse({"error": "Invalid car_id"}, status=400)
+
+    try:
+        car_to_check = Car.objects.get(id=car_id)
+    except Car.DoesNotExist:
+        return JsonResponse({"error": "Car not found"}, status=404)
+
+    # Verificar si el coche ya está en favoritos del usuario
+    existing_favorite = FavouriteCar.objects.filter(user=user, car=car_to_check).exists()
+
+    if existing_favorite:
+        return JsonResponse({'success': False, 'message': 'Car is already in favourites'}, status=200)
+    
+    # Si no existe, agregarlo a favoritos
+    favorite_car = FavouriteCar(user=user, car=car_to_check)
+    favorite_car.save()
+
+    return JsonResponse({'success': True, 'message': 'Car added to favourites'}, status=200)
     
 @csrf_exempt
 def get_favourites(request):
